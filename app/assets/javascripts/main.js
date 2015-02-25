@@ -3,7 +3,8 @@ console.log('loaded, bru.');
 var $randomPokemon, // page element references (set on load below...)
     $newPokeball,
     $pokeballs,
-    $pokeballListEl;
+    $pokeballListEl,
+    $pokemon;
 
 // Below are the functions necessary to create the HTML for a Pokemon
 // object on the screen. You need to call the first function with a
@@ -16,9 +17,11 @@ var attachLargePokemonTemplate = function(attributes) {
   $pokemon = $templatePokemonLarge(attributes, capitalize(iChoseNext()));
   $randomPokemon.append($pokemon);
 }
+
 var clearRandomPokemon = function() {
   $randomPokemon.children().fadeOut().remove();
 }
+
 var $templatePokemonLarge = function(attributes, person) {
   $template = $('<div class="pokemon template large animated zoomIn">')
                 .attr('data-rid',     attributes.id) // rails id
@@ -37,33 +40,49 @@ var $templatePokemonLarge = function(attributes, person) {
   return $template;
 }
 
-// Attach and template methods for new pokeballs and new pokemon in pokeballs!
+// Attach and template functions for new pokeballs and new pokemon in pokeballs!
 var attachPokeball = function(attributes) {
   // call your pokeball template and then append it where it should go
 }
+
 var $templatePokeball = function(attributes) {
   // create a small jQuery template for pokéballs
 }
+
 var attachSmallPokemonTemplate = function(attributes, elementAppendedTo) {
-  // call your small template and then append it where it should go
-}
-var $templatePokemonSmall = function(attributes) {
-  // create a small jQuery template for Pokémon
-  // to insert into your Poké ball!
+  var $template = $templatePokemonSmall(attributes);
+  $template.appendTo(elementAppendedTo);
 }
 
-// Click methods 
+var $templatePokemonSmall = function(attributes) {
+  var $template = $('<div class="pokemon template small animated zoomIn">').attr('data-rid', attributes.id).attr('data-pkdx-id', attributes.pkdx_id)
+  $('<h4>').text(attributes.name).appendTo($template);
+  $('<img class="poke-sprite" width="100">').attr('src', attributes.image_url).appendTo($template)
+
+  return $template;
+}
+
+var currentPokemonData = function(){
+  return {
+    id:        $pokemon.data('rid'),
+    pkdx_id:   $pokemon.data('pkdx_id'),
+    name:      $pokemon.find('h4').text(),
+    image_url: $pokemon.find('img').attr('src')
+  }
+}
+
 var catchPokemon = function(e) {
   $chosen_player = $('.chosen').children().first();
   $pokemon       = $(e.target).parent();
 
-  // this is a stub...
-  // fires when you click the catch button (see large template above)
+  var data = currentPokemonData();
+  clearRandomPokemon();
+  attachSmallPokemonTemplate(data, $chosen_player.find(".panel-body"))
 
   console.log($chosen_player.data('name') + ' --> ' + $pokemon.data('rid'));
 }
 
-// these methods change the chosen pokeball and return whose pokeball it is
+// these functions change the chosen pokeball and return whose pokeball it is
 var iChoseNext = function() {
   $col    = $('.pokeball-col');
   $chosen = $('.chosen');
@@ -84,6 +103,7 @@ var iChoseNext = function() {
     return null;
   }
 }
+
 var currentPlayer = function($chosen) {
   return $chosen.children().first().data('name');
 }
@@ -95,9 +115,38 @@ $(document).ready(function() {
   $pokeballListEl = $('.pokeballs');
 
   $('#generate-random-poke').on('click', function(e) {
-    // get a random pokemon from the database and
-    // attach it to the DOM (with the large template)
+
+    $.ajax({
+      url: "http://localhost:3000/pokemons",
+      type: "GET",
+      dataType: "json",
+      data: {random: true}
+    }).done(function(data){
+      attachLargePokemonTemplate(data)
+    })
   });
+
+  var philBall  = $pokeballs.find(".panel-body")[0]
+  $.ajax({
+    url: "http://localhost:3000/pokeballs/1/pokemons",
+    type: "GET",
+    dataType: "json"
+  }).done(function(data){
+    for(i=0;i<data.length;i++){
+      attachSmallPokemonTemplate(data[i], philBall)
+    }
+  })
+
+var sarahBall =$pokeballs.find(".panel-body")[1]
+  $.ajax({
+    url: "http://localhost:3000/pokeballs/2/pokemons",
+    type: "GET",
+    dataType: "json"
+  }).done(function(data){
+    for(i=0;i<data.length;i++){
+      attachSmallPokemonTemplate(data[i], sarahBall)
+    }
+  })
 });
 
 // Utility function!
