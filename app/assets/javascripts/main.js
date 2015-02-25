@@ -75,6 +75,11 @@ var catchPokemon = function(e) {
   $chosen_player = $('.chosen').children().first();
   $pokemon       = $(e.target).parent();
 
+  // $.ajax({
+  //   url:  'pokeballs/'+id+'/pokemons',
+  //   type: 'POST'
+  // })
+
   var data = currentPokemonData();
   clearRandomPokemon();
   attachSmallPokemonTemplate(data, $chosen_player.find(".panel-body"))
